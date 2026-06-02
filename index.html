@@ -11,6 +11,7 @@
       --font: 'Geist','Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
     }
     * { box-sizing: border-box; }
+    html, body { overflow-x: hidden; }
     body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font);
       -webkit-font-smoothing: antialiased; padding: 48px 20px 80px; }
     .wrap { max-width: 760px; margin: 0 auto; }
@@ -19,11 +20,11 @@
     .brand img { width: 30px; height: 30px; border-radius: 7px; display: block; }
     .brand .name { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; color: var(--brand); }
     h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 18px 0 6px; }
-    .sub { font-size: 14px; color: var(--ink-mute); margin: 0; line-height: 1.5; }
+    .sub { font-size: 14px; color: var(--ink-mute); margin: 0; line-height: 1.55; }
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
       box-shadow: 0 6px 20px rgba(10,16,28,0.06); overflow: hidden; margin-top: 22px; }
-    .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      padding: 12px 16px; border-bottom: 1px solid var(--line); background: #fafafa; }
+    .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 12px 16px; border-bottom: 1px solid var(--line); background: #fafafa; flex-wrap: wrap; }
     .bar-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
     .who { font-size: 14px; font-weight: 700; color: var(--ink); }
     .tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
@@ -34,12 +35,27 @@
       transition: background .15s ease; }
     .copy:hover { background: #1d4ed8; }
     .copy.ok { background: #16a34a; }
-    .stage { padding: 26px 22px; background:
-      repeating-linear-gradient(45deg,#ffffff,#ffffff 10px,#fcfcfc 10px,#fcfcfc 20px); }
-    .sig { }
+    /* Email signatures are fixed-width (~600px). Render at true size and let the
+       stage scroll horizontally on narrow screens instead of squishing/overflowing. */
+    .stage { padding: 26px 22px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      background: repeating-linear-gradient(45deg,#ffffff,#ffffff 10px,#fcfcfc 10px,#fcfcfc 20px); }
+    .sig { width: 600px; max-width: 600px; }
+    .scroll-hint { display: none; font-size: 11px; color: var(--ink-mute); padding: 0 16px 12px;
+      background: #fafafa; }
     footer.page { margin-top: 40px; font-size: 12px; color: var(--ink-mute); line-height: 1.6; }
     footer.page code { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; background: rgba(10,16,28,0.05);
       padding: 1px 5px; border-radius: 4px; }
+
+    @media (max-width: 640px) {
+      body { padding: 24px 12px 56px; }
+      h1 { font-size: 21px; }
+      .sub { font-size: 13px; }
+      .card { margin-top: 16px; border-radius: 14px; }
+      .bar { padding: 11px 13px; }
+      .copy { order: 3; width: 100%; padding: 10px 16px; }
+      .stage { padding: 16px 14px; }
+      .scroll-hint { display: block; }
+    }
   </style>
 </head>
 <body>
@@ -170,6 +186,7 @@
 <!-- /Evolantia Email Signature -->
         </div>
       </div>
+      <div class="scroll-hint">&#8596; Deslizá para ver la firma completa</div>
     </section>
     <section class="card">
       <div class="bar">
@@ -281,6 +298,7 @@
 <!-- /Evolantia Email Signature -->
         </div>
       </div>
+      <div class="scroll-hint">&#8596; Deslizá para ver la firma completa</div>
     </section>
     <section class="card">
       <div class="bar">
@@ -389,6 +407,7 @@
 <!-- /Evolantia Email Signature -->
         </div>
       </div>
+      <div class="scroll-hint">&#8596; Deslizá para ver la firma completa</div>
     </section>
     <section class="card">
       <div class="bar">
@@ -500,11 +519,14 @@
 <!-- /Evolantia Email Signature -->
         </div>
       </div>
+      <div class="scroll-hint">&#8596; Deslizá para ver la firma completa</div>
     </section>
 
     <footer class="page">
+      <p>Las firmas tienen un ancho fijo (~600&nbsp;px) pensado para el correo; en pantallas chicas se
+        previsualizan con desplazamiento horizontal, pero en el cliente de correo se ven completas.</p>
       <p>Si las imágenes no cargan, tu cliente puede estar bloqueando imágenes remotas — autorizá
-        &ldquo;mostrar imágenes&rdquo;. Los recursos se sirven desde
+        &ldquo;mostrar imágenes&rdquo;. Recursos servidos desde
         <code>raw.githubusercontent.com/Sorrosal/evolantia-signatures/main</code>.</p>
     </footer>
   </div>
@@ -519,7 +541,7 @@
         sel.removeAllRanges();
         sel.addRange(range);
         var done = function () {
-          var label = btn.textContent;
+          var label = 'Copiar firma';
           btn.textContent = '¡Copiada!';
           btn.classList.add('ok');
           setTimeout(function () { btn.textContent = label; btn.classList.remove('ok'); }, 1600);
@@ -528,7 +550,6 @@
         try {
           if (document.execCommand('copy')) { done(); return; }
         } catch (e) {}
-        // Fallback: rich clipboard (needs https/localhost)
         if (navigator.clipboard && window.ClipboardItem) {
           var blob = new Blob([el.innerHTML], { type: 'text/html' });
           navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]).then(done);
